@@ -1,0 +1,115 @@
+---
+title: "GIS Practice"
+author: "Ethan Tenison"
+date: "12/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+#Quickly install all package you might be missing with PACMAN! 
+install.packages("pacman")
+
+pacman::p_load(ggplot2, cowplot, sf, leaflet, rnaturalearth, rnaturalearthdata, tidyverse, scales, biscale)
+```
+
+# RnaturalEarthData
+
+```{r rnat}
+
+
+
+```
+
+
+```{r simpleplot}
+
+
+```
+
+```{r latinamerica}
+
+```
+
+# Basic Plotting with ggplot2
+
+```{r ggplot2}
+
+
+```
+
+# GDP per capita 
+
+```{r gdppercapita}
+
+
+```
+
+# Adding Health Data 
+
+```{r health}
+
+
+
+```
+
+# Biscale (GDP vs Doctors)
+
+
+```{r biscale}
+
+# nc2 = bi_class(nc, x=BIR74, y=SID74,
+#                    style = "quantile", dim = 3)
+# 
+# map = ggplot() +
+#   geom_sf(
+#     data = nc2,
+#     aes(fill = bi_class),
+#     size = .1,
+#     show.legend = F,
+#     color = "white"
+#   ) +
+#   bi_scale_fill(pal = "Brown", dim = 3) +
+#   coord_sf(expand = F) +
+#   theme_void() +
+#   theme(plot.background = element_blank())
+# 
+# legend = bi_legend(pal = "Brown", 
+#             dim = 3,
+#             ylab = "Births",
+#             xlab = "SIDs",
+#             size = 2.5) + 
+#   theme(panel.border = element_blank(),
+#         axis.text = element_blank(),
+#         axis.title.x = element_text(size = 16, hjust=0, 
+#                                     color = "white", margin=margin(t=-5)),
+#         axis.title.y = element_text(size = 16, hjust=0,
+#                                     color = "white", margin=margin(r=-5)),
+#         legend.text = element_text(size = 14),
+#         panel.background = element_blank(),
+#         panel.grid.major=element_blank(),
+#         plot.background = element_blank(),
+#         legend.text.align = 0)
+# 
+# p1 = ggdraw(map) +
+#   draw_plot(legend, 0.01, 0.05, .4, .4) +
+#   draw_label("North Carolina (1974)", x=0.04, y=0.94, hjust=0, vjust=0,size=22, color="white", fontface="bold") +
+#   draw_label("Births vs SIDS", x=0.04, y=0.85, hjust=0, vjust=0, size=18.5, color="white", lineheight = 0.4) + draw_label("#30DayMapChallenge Dec 2021", x=0.8, y=0, size = 15, color="white") +
+#   theme(plot.background = element_rect(fill="#212A2E", color=NA),
+#         plot.margin=margin(.5,.5,.5,.5, unit="cm"))
+# 
+# p1
+
+
+```
+
+# Leaflet
+
+
+```{r leaflet}
+
+
+
+```
+
