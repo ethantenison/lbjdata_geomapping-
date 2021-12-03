@@ -1,0 +1,184 @@
+---
+title: "GIS Practice"
+author: "Ethan Tenison"
+date: "12/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+#Quickly install all package you might be missing with PACMAN! 
+install.packages("pacman")
+
+pacman::p_load(ggplot2, cowplot, sf, leaflet, rnaturalearth, rnaturalearthdata, tidyverse, scales, biscale)
+```
+
+# RnaturalEarthData
+
+```{r rnat}
+
+df <- st_as_sf(countries50)
+
+glimpse(df)
+
+```
+
+
+```{r simpleplot}
+
+plot(df)
+
+```
+
+```{r latinamerica}
+
+la <- df |> 
+  filter(region_wb == "Latin America & Caribbean")
+
+plot(la)
+
+```
+
+# Basic Plotting with ggplot2
+
+```{r ggplot2}
+
+theme_set(theme_minimal())
+
+ggplot(la) +
+  geom_sf(aes(fill = gdp_md_est)) +
+  labs(title = "GDP in Latin America", 
+       fill = "GDP (Million of $)") +
+  scale_fill_viridis_c(labels = dollar) +
+  theme(
+    plot.title = element_text(hjust = 0.5)
+  )
+```
+
+# GDP per capita 
+
+```{r gdppercapita}
+
+
+la2 <- la |> 
+  mutate(gdp_pc = (gdp_md_est/pop_est)*1000000) |> 
+  filter(continent == "South America", 
+         name != "Falkland Is.")
+
+ggplot(la2) +
+  geom_sf(aes(fill = gdp_pc)) +
+  labs(title = "GDP percapita in Latin America", 
+       fill = "GDP (Million of $)") +
+  scale_fill_viridis_c(labels = dollar) +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+
+```
+
+# Adding Health Data 
+
+```{r health}
+
+md <- read_csv("data.csv") |> 
+  filter(Indicator == "Medical doctors (per 10,000)")
+
+df_md <- df |> 
+  left_join(md, by = c("adm0_a3" = "SpatialDimValueCode")) |> 
+  filter(IsLatestYear == TRUE, 
+         region_wb == "Latin America & Caribbean") |> 
+  mutate(gdp_pc = (gdp_md_est/pop_est)*1000000)
+
+ggplot(df_md) +
+  geom_sf(aes(fill = Value)) +
+  labs(title = "Doctors per 10,000 People in Americas", 
+       fill = "Doctors per 10,000 ") +
+  scale_fill_viridis_c() +
+  theme(
+    plot.title = element_text(hjust = 0.5), 
+    axis.text.x = element_blank(), 
+    axis.text.y = element_blank(),
+    axis.ticks = element_blank()
+  )
+
+```
+
+# Biscale (GDP vs Doctors)
+
+
+```{r biscale}
+
+df_md2 = bi_class(df_md, x=gdp_pc, y=Value,
+                   style = "quantile", dim = 3)
+
+map = ggplot() +
+  geom_sf(
+    data = df_md2,
+    aes(fill = bi_class),
+    size = .1,
+    show.legend = F,
+    color = "white"
+  ) +
+  bi_scale_fill(pal = "Brown", dim = 3) +
+  coord_sf(expand = F) +
+  theme_void() +
+  theme(plot.background = element_blank())
+
+legend = bi_legend(pal = "Brown", 
+            dim = 3,
+            ylab = "Doctors",
+            xlab = "GDP pc",
+            size = 2.5) + 
+  theme(panel.border = element_blank(),
+        axis.text = element_blank(),
+        axis.title.x = element_text(size = 16, hjust=0, 
+                                    color = "white", margin=margin(t=-5)),
+        axis.title.y = element_text(size = 16, hjust=0,
+                                    color = "white", margin=margin(r=-5)),
+        legend.text = element_text(size = 14),
+        panel.background = element_blank(),
+        panel.grid.major=element_blank(),
+        plot.background = element_blank(),
+        legend.text.align = 0)
+
+p1 = ggdraw(map) +
+  draw_plot(legend, 0.01, 0.05, .4, .4) +
+  draw_label("Latin America", x=0.04, y=0.54, hjust=0, vjust=0,size=22, color="white", fontface="bold") +
+  draw_label("GDP and Doctors", x=0.04, y=0.45, hjust=0, vjust=0, size=18.5, color="white", lineheight = 0.4) + draw_label("LBJ Data Studio Dec 2021", x=0.8, y=0, size = 15, color="white") +
+  theme(plot.background = element_rect(fill="#212A2E", color=NA),
+        plot.margin=margin(.5,.5,.5,.5, unit="cm"))
+
+p1
+
+
+```
+
+# Leaflet
+
+
+```{r leaflet}
+
+pal <- colorNumeric(palette = "RdBu",n = 5,reverse = FALSE, df_md2$Value)
+
+leaflet(df_md2) %>% 
+  addProviderTiles("CartoDB.Positron") %>% #Tiles are the map background
+  addPolygons(color = "#444444",
+              weight = 1,
+    smoothFactor = 0.5,
+    opacity = 1.0,
+    fillOpacity = 0.5,
+    fillColor = ~ pal(Value),
+    highlightOptions = highlightOptions(color = "white", weight = 2,
+      bringToFront = TRUE),
+    popup = df_md2$Value,
+    label = df_md2$Value
+  ) %>%
+  addLegend(pal = pal, values = ~df_md2$Value, position = "bottomright", title = "Doctors Per 10,000")
+
+
+```
+
